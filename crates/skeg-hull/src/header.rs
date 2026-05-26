@@ -11,9 +11,7 @@ use std::io::{Read, Seek, SeekFrom, Write};
 
 use crate::Result;
 use crate::error::Error;
-use crate::format::{
-    FILE_CHECKSUM_LEN, FormatId, HEADER_LEN, MAGIC, SECTION_ENTRY_LEN,
-};
+use crate::format::{FILE_CHECKSUM_LEN, FormatId, HEADER_LEN, MAGIC, SECTION_ENTRY_LEN};
 
 /// A section table entry: where the payload of a logical section lives
 /// in the file, and how to verify it.
@@ -122,8 +120,7 @@ impl Header {
         let created_at = i64::from_le_bytes(buf[16..24].try_into().unwrap());
         let body_len = u64::from_le_bytes(buf[24..32].try_into().unwrap());
         let section_count = u32::from_le_bytes(buf[32..36].try_into().unwrap());
-        let section_table_offset =
-            u32::from_le_bytes(buf[36..40].try_into().unwrap());
+        let section_table_offset = u32::from_le_bytes(buf[36..40].try_into().unwrap());
         // bytes 40..64 reserved, ignored.
 
         if section_table_offset != Self::SECTION_TABLE_OFFSET {
@@ -146,7 +143,9 @@ impl Header {
         let mut sections = Vec::with_capacity(section_count as usize);
         for i in 0..(section_count as usize) {
             let off = i * SECTION_ENTRY_LEN;
-            sections.push(SectionEntry::read_from(&table_buf[off..off + SECTION_ENTRY_LEN])?);
+            sections.push(SectionEntry::read_from(
+                &table_buf[off..off + SECTION_ENTRY_LEN],
+            )?);
         }
 
         Ok(Self {

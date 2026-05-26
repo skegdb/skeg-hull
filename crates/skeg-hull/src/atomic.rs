@@ -104,9 +104,7 @@ mod tests {
     fn failure_removes_temp() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("data.bin");
-        let r: Result<()> = atomic_write(&path, |_f| {
-            Err(crate::Error::Malformed("nope".into()))
-        });
+        let r: Result<()> = atomic_write(&path, |_f| Err(crate::Error::Malformed("nope".into())));
         assert!(r.is_err());
         assert!(!path.exists());
         // No leftover .tmp.<pid>.

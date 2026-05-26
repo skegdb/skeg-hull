@@ -94,11 +94,7 @@ pub fn read_saga<R: Read + Seek>(reader: &mut R) -> Result<Saga> {
             type_id: centroid_entry.type_id,
         });
     }
-    let centroids = centroid::decode(
-        centroid_bytes,
-        meta.centroid_count,
-        meta.embedding_dim,
-    )?;
+    let centroids = centroid::decode(centroid_bytes, meta.centroid_count, meta.embedding_dim)?;
 
     let tag_bytes = read_section(&all, tag_entry.offset, tag_entry.length)?;
     if crc32c(tag_bytes) != tag_entry.checksum {
