@@ -2,7 +2,7 @@ name: Release
 
 # Publishes skeg-hull to crates.io. Trigger with a `v*` tag, or run
 # manually (dry_run defaults to true so a manual run verifies without
-# uploading).
+# uploading). A re-run against an already-published version is a no-op.
 
 on:
   push:
@@ -34,5 +34,6 @@ jobs:
           if [ "${{ inputs.dry_run }}" = "true" ]; then
             cargo publish --dry-run --locked
           else
-            cargo publish --locked
+            out=$(cargo publish --locked 2>&1) || \
+              echo "$out" | grep -qE 'already (uploaded|exists)' || { echo "$out"; exit 1; }
           fi
