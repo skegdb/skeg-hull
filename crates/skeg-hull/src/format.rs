@@ -14,6 +14,8 @@ pub enum FormatId {
     Vamana = 2,
     /// Hansa saga digest (implemented in v0.1).
     Saga = 3,
+    /// LLM KV cache for inference state persistence (skeg-kv-cache, M0).
+    KvCache = 4,
 }
 
 impl FormatId {
@@ -23,6 +25,7 @@ impl FormatId {
             1 => Some(Self::Kv),
             2 => Some(Self::Vamana),
             3 => Some(Self::Saga),
+            4 => Some(Self::KvCache),
             _ => None,
         }
     }
@@ -61,6 +64,12 @@ pub const SAGA_V1: FormatVersion = FormatVersion {
     version: 1,
 };
 
+/// LLM KV cache format, v1. Implemented in skeg-kv-cache M0 prototype.
+pub const KV_CACHE_V1: FormatVersion = FormatVersion {
+    format: FormatId::KvCache,
+    version: 1,
+};
+
 /// Magic bytes prefixing every hull file. Eight bytes, ASCII.
 pub const MAGIC: [u8; 8] = *b"SKEGHULL";
 
@@ -80,7 +89,12 @@ mod tests {
 
     #[test]
     fn format_id_roundtrip() {
-        for id in [FormatId::Kv, FormatId::Vamana, FormatId::Saga] {
+        for id in [
+            FormatId::Kv,
+            FormatId::Vamana,
+            FormatId::Saga,
+            FormatId::KvCache,
+        ] {
             assert_eq!(FormatId::from_u16(id.as_u16()), Some(id));
         }
         assert!(FormatId::from_u16(0).is_none());

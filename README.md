@@ -53,8 +53,6 @@ assert_eq!(back, saga);
 └──────────────────────────────────────────────────┘
 ```
 
-Full byte-by-byte layout in [private/hull.md][hull-design].
-
 ## Building
 
 ```sh
@@ -65,5 +63,3 @@ cargo test --workspace
 ## License
 
 Apache-2.0.
-
-[hull-design]: ../hansa/private/hull.md

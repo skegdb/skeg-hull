@@ -5,7 +5,7 @@
 //! matrix is trivial; the abstraction is in place so v0.2+ can extend
 //! it without changing call sites.
 
-use crate::format::{FormatId, FormatVersion, KV_V1, SAGA_V1, VAMANA_V1};
+use crate::format::{FormatId, FormatVersion, KV_CACHE_V1, KV_V1, SAGA_V1, VAMANA_V1};
 
 /// Result of checking a file's declared format against this reader.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -31,12 +31,13 @@ const fn highest_supported(format: FormatId) -> u16 {
         FormatId::Kv => KV_V1.version,
         FormatId::Vamana => VAMANA_V1.version,
         FormatId::Saga => SAGA_V1.version,
+        FormatId::KvCache => KV_CACHE_V1.version,
     }
 }
 
 /// Set of format/version pairs this reader supports.
 pub fn supported() -> Vec<FormatVersion> {
-    vec![KV_V1, VAMANA_V1, SAGA_V1]
+    vec![KV_V1, VAMANA_V1, SAGA_V1, KV_CACHE_V1]
 }
 
 /// Check whether this reader can open a file with the given declared

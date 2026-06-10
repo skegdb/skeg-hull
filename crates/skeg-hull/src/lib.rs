@@ -23,12 +23,14 @@ pub mod compat;
 pub mod error;
 pub mod format;
 pub mod header;
+pub mod kv_cache;
 pub mod saga;
+pub mod scrub;
 
 pub use atomic::atomic_write;
 pub use compat::{Compatibility, check_compatibility};
 pub use error::Error;
-pub use format::{FormatId, FormatVersion, KV_V1, SAGA_V1, VAMANA_V1};
+pub use format::{FormatId, FormatVersion, KV_CACHE_V1, KV_V1, SAGA_V1, VAMANA_V1};
 pub use header::{Header, SectionEntry};
 
 /// Crate result alias.

@@ -9,16 +9,28 @@
 use std::fs::{File, OpenOptions};
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::Result;
+
+/// Per-process monotonic counter used to disambiguate `atomic_write` temp
+/// files across threads of the same process. Combined with PID + nanos
+/// timestamp it produces unique names without coordination.
+static TMP_COUNTER: AtomicU64 = AtomicU64::new(0);
 
 /// Write a file atomically: build the content with `f` into a temp file
 /// in the same directory, fsync it, then rename onto the target. The
 /// containing directory is fsynced too so the rename is durable.
 ///
-/// The temp file is named `<target>.tmp.<pid>` to avoid collisions when
-/// multiple writers race; on success the temp is renamed onto the target;
-/// on failure the temp is removed best effort.
+/// The temp file is named `<target>.tmp.<pid>.<nanos>.<counter>` so that
+/// **cross-thread** writers in the same process don't collide on the temp
+/// path. Bug fixed 2026-05-27: the prior `<target>.tmp.<pid>` scheme caused
+/// EEXIST when two threads raced, and the loser's cleanup `remove_file`
+/// could delete the winner's in-flight temp.
+///
+/// On success the temp is renamed onto the target; on failure the temp is
+/// removed best effort.
 pub fn atomic_write<P, F>(target: P, f: F) -> Result<()>
 where
     P: AsRef<Path>,
@@ -32,6 +44,11 @@ where
         ))
     })?;
     let pid = std::process::id();
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_nanos() as u64)
+        .unwrap_or(0);
+    let counter = TMP_COUNTER.fetch_add(1, Ordering::Relaxed);
     let mut tmp_name = target
         .file_name()
         .ok_or_else(|| {
@@ -41,7 +58,7 @@ where
             ))
         })?
         .to_os_string();
-    tmp_name.push(format!(".tmp.{pid}"));
+    tmp_name.push(format!(".tmp.{pid}.{nanos}.{counter}"));
     let tmp_path: PathBuf = dir.join(tmp_name);
 
     let result = (|| -> Result<()> {
